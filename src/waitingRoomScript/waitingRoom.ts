@@ -16,8 +16,6 @@ function getPlayers(): Set<string> {
     }
 
     const res = WA.state.loadVariable('players') as string[] || []
-    console.log('players loaded')
-    console.log(res)
     return new Set(res)
 }
 
@@ -36,7 +34,6 @@ WA.onInit().then(async () => {
 
         WA.room.hideLayer(ObjectWaitingRoom.WALLS);
         // WA.event.broadcast('playerInside', WA.player.uuid);
-        console.log("player inside")
         const players = getPlayers()
         players.add(WA.player.uuid)
         
@@ -51,7 +48,6 @@ WA.onInit().then(async () => {
 
         WA.room.showLayer(ObjectWaitingRoom.WALLS);
         // WA.event.broadcast('playerOutside', WA.player.uuid);
-        console.log("player outside")
 
         const players = getPlayers()
         players.delete(WA.player.uuid)
@@ -60,13 +56,14 @@ WA.onInit().then(async () => {
         // WA.event.broadcast('players', Array.from(getPlayers()))
     });
 
-    // WA.event.on('players').subscribe(async (ev) => {
-    //     // console.log(ev)
-    //     const players = new Set(ev.data as any)
-    //     // console.log('players events')
-    //     console.log(players)
-    //     // await WA.state.saveVariable('players', players)
-    // })
+    WA.event.on('teleportPlayer').subscribe(async (ev) => {
+        if (WA.player.uuid === ev.data) {
+            // random delay from 1 to 5 seconds
+            const delay = Math.floor(Math.random() * 2) + 1;
+            await new Promise((resolve) => setTimeout(resolve, delay * 200));
+            WA.nav.goToRoom('../maps/cds.tmj');
+        }
+    })
 
     const subPlayers = WA.state.onVariableChange('players').subscribe((x) => {
         // players = x as string[] || []
@@ -80,14 +77,19 @@ WA.onInit().then(async () => {
         id: startGameBtnName,
         label: 'Start game',
         callback: (event) => {
-        console.log('players', getPlayers().values.length)
-            if (getPlayers().values.length < 2) {
+        console.log('players', getPlayers().size)
+            if (getPlayers().size < 2) {
                 const popup = WA.ui.openPopup('popup', 'You need at least 2 players to start the game', []);
                 setTimeout(() => closePopup(popup), 2000)
                 return;
             }
 
-            //
+            // TELEPORT TO ROOM
+            for (const player of Array.from(getPlayers().values())) {
+                console.log("teleport", player)
+                WA.event.broadcast('teleportPlayer', player)
+            }
+                
         }
     });
 
