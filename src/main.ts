@@ -1,6 +1,6 @@
 import {bootstrapExtra} from "@workadventure/scripting-api-extra";
 import {setupCourseTriggers} from "./events/game-race/area-triggers";
-import {GameRaceEvents, setupGameListeners} from "./events/game-race/events";
+import {GameRaceEvents, paralyseOthers, setupGameListeners} from "./events/game-race/events";
 
 console.log('Script started successfully');
 
@@ -13,6 +13,18 @@ WA.onInit().then(async () => {
     setupCourseTriggers()
     setupGameListeners()
     await startGame()
+
+    // Add action bar button 'Register'.
+    WA.ui.actionBar.addButton({
+        id: 'malus',
+        type: 'action',
+        imageSrc: 'https://upload.wikimedia.org/wikipedia/fr/archive/0/01/20211228035137%21RATP.svg',
+        toolTip: 'Utiliser un objet contre vos adversaire!',
+        callback: (event) => {
+            console.log('Action bar button clicked', event);
+            paralyseOthers()
+        }
+    });
 
     // The line below bootstraps the Scripting API Extra library that adds a number of advanced properties/features to WorkAdventure
     bootstrapExtra().then(() => {

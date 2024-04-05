@@ -9,18 +9,13 @@ export enum GameRaceEvents {
     SHOW_QUIZ = "quiz:enter",
     WRONG_ANSWER = "quiz:wrong_answer",
     RIGHT_ANSWER = "quiz:right_answer",
-}
-
-export interface QuizData {
-    id: number
-    question: string
-    answers: { id: number, answer: string }[]
-    rightAnswer: number
+    PARALYSED_BY_OTHER = "paralyse:others",
 }
 
 export const SoundCollection = {
     quizTime: WA.sound.loadSound('/sound/quiz_time.ogg'),
     sus: WA.sound.loadSound('/sound/sus.mp3'),
+    mario_boo: WA.sound.loadSound('/sound/mario_boo_effect.wav'),
 }
 
 const iPopupQueue: Popup[] = []
@@ -87,6 +82,38 @@ export function setupGameListeners() {
         const paralysedSound = WA.sound.loadSound('/sound/wrong_answer.wav')
         paralysedSound.play({})
     })
+    WA.event.on(GameRaceEvents.PARALYSED_BY_OTHER).subscribe((eventData) => {
+        let data = eventData.data as any
+        if (data.sourcePlayer === WA.player.playerId) {
+            WA.ui.banner.openBanner({
+                id: "banner-paralysed",
+                text: "Vous avez paralysé tous les autres joueurs!",
+                bgColor: "#deff89",
+                textColor: "#8c7b75",
+                closable: false,
+                timeToClose: 3000,
+            });
+            SoundCollection.mario_boo.play({})
+            return
+        } else {
+            WA.ui.banner.openBanner({
+                id: "banner-paralysed",
+                text: "Vous êtes paralysé !",
+                bgColor: "#de0a11",
+                textColor: "#ffffff",
+                closable: false,
+                timeToClose: 3000,
+            });
+        }
+        const paralysedSound = WA.sound.loadSound('/sound/paralysed_sound.wav')
+        paralysedSound.play({loop: true})
+        WA.controls.disablePlayerControls()
+        setTimeout(() => {
+            WA.controls.restorePlayerControls()
+            WA.ui.banner.closeBanner()
+            paralysedSound.stop()
+        }, 3000)
+    })
 }
 
 export const handleGameCountdown = async () => {
@@ -120,8 +147,8 @@ export const handleGameCountdownEnd = () => {
     });
 }
 
-export const handleGameEndForWinner = (playerName: string, playerId: number ) => {
-    if(playerId !== WA.player.playerId) {
+export const handleGameEndForWinner = (playerName: string, playerId: number) => {
+    if (playerId !== WA.player.playerId) {
         return
     }
 
@@ -140,7 +167,7 @@ export const handleGameEndForWinner = (playerName: string, playerId: number ) =>
 }
 
 export const handleGameEndForLooser = (playerId: number) => {
-    if(playerId == WA.player.playerId) {
+    if (playerId == WA.player.playerId) {
         return
     }
 
@@ -180,4 +207,8 @@ export const showQuiz = async (obstacleName: string) => {
         }
     }))
     iPopupQueue.push(questionPopup)
+}
+
+export const paralyseOthers = () => {
+    WA.event.broadcast(GameRaceEvents.PARALYSED_BY_OTHER, {sourcePlayer: WA.player.playerId}).then()
 }
