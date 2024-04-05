@@ -1,8 +1,7 @@
-
 import {bootstrapExtra} from "@workadventure/scripting-api-extra";
 import {Popup} from "@workadventure/iframe-api-typings";
 import {closePopup, onClock, onPlayerInside, onPlayerOutside, onPlayerSpawn} from "./events";
-import { ObjectWaitingRoom } from "./objectWaitingRoom";
+import {ObjectWaitingRoom} from "./objectWaitingRoom";
 
 console.log('Script started successfully');
 
@@ -12,7 +11,7 @@ const startGameBtnName = 'startGameBtn';
 function getPlayers(): Set<string> {
     if (!WA.state.loadVariable('players')) {
         console.log('players not found, go undefined')
-        WA.state.saveVariable('players', [])
+        WA.state.saveVariable('players', []).then()
     }
 
     const res = WA.state.loadVariable('players') as string[] || []
@@ -39,7 +38,7 @@ WA.onInit().then(async () => {
         console.log("player inside")
         const players = getPlayers()
         players.add(WA.player.uuid)
-        
+
         await WA.state.saveVariable('players', Array.from(players))
         // WA.event.broadcast('players', Array.from(getPlayers()))
     });
@@ -56,7 +55,7 @@ WA.onInit().then(async () => {
         const players = getPlayers()
         players.delete(WA.player.uuid)
 
-        await WA.state.saveVariable('players',  Array.from(players))
+        await WA.state.saveVariable('players', Array.from(players))
         // WA.event.broadcast('players', Array.from(getPlayers()))
     });
 
@@ -68,20 +67,18 @@ WA.onInit().then(async () => {
             WA.nav.goToRoom('../maps/cds.tmj');
         }
     })
-
-    const subPlayers = WA.state.onVariableChange('players').subscribe((x) => {
+    WA.state.onVariableChange('players').subscribe((x) => {
         // players = x as string[] || []
         console.log('players changed', x)
         console.log('players changed', getPlayers())
-    })
-
+    });
     onClock(clockPopUp)
 
     WA.ui.actionBar.addButton({
         id: startGameBtnName,
         label: 'Start game',
-        callback: (event) => {
-        console.log('players', getPlayers().size)
+        callback: () => {
+            console.log('players', getPlayers().size)
             if (getPlayers().size < 2) {
                 const popup = WA.ui.openPopup('popup', 'You need at least 2 players to start the game', []);
                 setTimeout(() => closePopup(popup), 2000)
@@ -94,7 +91,7 @@ WA.onInit().then(async () => {
                 console.log("teleport", player)
                 WA.event.broadcast('teleportPlayer', player)
             }
-                
+
         }
     });
 
