@@ -1,8 +1,7 @@
 import {ObjectWaitingRoom} from "./objectWaitingRoom";
 import {Popup} from "@workadventure/iframe-api-typings";
-import {WorkadventurePlayerCommands} from "@workadventure/iframe-api-typings/front/Api/Iframe/player";
 
-export function onPlayerSpawn(player: WorkadventurePlayerCommands) {
+export function onPlayerSpawn(player: any) {
     welcome(player.name)
 }
 
