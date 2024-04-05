@@ -1,6 +1,11 @@
 name: Optimize map and deploy
 
-on: [ push ]
+on:
+  push:
+    branches: main
+  pull_request_target:
+    branches: main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -21,7 +26,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: "Install dependencies"
-        run: npm install
+        run: rm package-lock.json && npm install
 
       - name: "Build scripts"
         run: npm run build
