@@ -16,7 +16,6 @@ export const SoundCollection = {
     quizTime: WA.sound.loadSound('/sound/quiz_time.ogg'),
     sus: WA.sound.loadSound('/sound/sus.mp3'),
     mario_boo: WA.sound.loadSound('/sound/mario_boo_effect.wav'),
-    gourmet_race: WA.sound.loadSound('/sound/gourmet_race.wav'),
 }
 
 const iPopupQueue: Popup[] = []
@@ -36,7 +35,7 @@ export function setupGameListeners() {
         WA.controls.disablePlayerControls()
         handleGameEndForWinner(data.concernedPlayerName, data.concernedPlayerId)
         handleGameEndForLooser(data.concernedPlayerId)
-        SoundCollection.gourmet_race.stop()
+
         WA.event.broadcast(GameRaceEvents.GAME_RESTART, {}).then()
     })
 
@@ -137,10 +136,6 @@ export const handleGameCountdown = async () => {
 
 export const handleGameCountdownEnd = () => {
     const paralysedSound = WA.sound.loadSound('/sound/countdown_end.wav')
-    // play sound after 1 seconds
-    setTimeout(() => {
-        SoundCollection.gourmet_race.play({volume: 0.5})
-    }, 1000)
     paralysedSound.play({})
     WA.ui.banner.openBanner({
         id: "banner-countdown",
